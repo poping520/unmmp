@@ -60,7 +60,7 @@ def main(argv=None):
     parser.add_argument('-o', '--out', required=True, help='output directory')
     parser.add_argument('--prefer-abi', choices=apkprobe.ABI_PREFER,
                         help='ABI to analyze (default order: %s)' % ', '.join(apkprobe.ABI_PREFER))
-    parser.add_argument('--skip-java', action='store_true', help='skip dex assembly')
+    parser.add_argument('--skip-dex', action='store_true', help='skip dex assembly')
     args = parser.parse_args(argv)
 
     inp, out = Path(args.input).resolve(), Path(args.out).resolve()
@@ -73,7 +73,7 @@ def main(argv=None):
             parser.error('input is inside a generated output directory')
         nm, vm, dex_inputs = load_inputs(inp, args.prefer_abi)
         restore(nm, vm, dex_inputs, str(out), str(HERE / 'tools'),
-                skip_java=args.skip_java, log=log)
+                skip_dex=args.skip_dex, log=log)
     except ImportError as exc:
         log('[!] missing dependency: %s; install requirements.txt' % exc)
         return 2

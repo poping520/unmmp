@@ -1,5 +1,7 @@
 # unmmp - nmmp 虚拟机加固还原工具
 
+**简体中文** | [English](README.EN.md)
+
 基于 Unicorn 模拟执行，将 [nmmp](https://github.com/maoabc/nmmp) dex-vm 加固的 native 方法还原为 dex 字节码。
 
 支持 ARM32、ARM64、x86、x86_64 任意架构的加固 APK。
@@ -29,10 +31,10 @@ python -m pip install -r requirements.txt
 ```powershell
 python unmmp.py 应用.apk -o out
 python unmmp.py 应用.apk -o out --prefer-abi armeabi-v7a
-python unmmp.py 应用.apk -o out --skip-java
+python unmmp.py 应用.apk -o out --skip-dex
 ```
 
-- --skip-java：输出映射、方法体和恢复统计，跳过 dex 组装。
+- --skip-dex：输出映射、方法体和恢复统计，跳过 dex 组装。
 - --prefer-abi：选择一对指定 ABI 的库；默认 arm64-v8a、armeabi-v7a、x86_64、x86。
 
 支持 APK，以及包含 dex、libnmmp.so、libnmmvm.so 的提取目录。
@@ -78,3 +80,7 @@ ARM64、x86_64 均完整恢复 7987 个方法，输出 dex 通过校验和、方
 - 不新增源码中缺失的 invoke-custom / invoke-polymorphic VM 实现。
 - 当前重建支持原 dex 035、037、038、039。
 - 有限语义探测与结构校验不能代替完整的 Android 运行验证。
+
+## 许可证
+
+本项目采用 [MIT 许可证](LICENSE)。

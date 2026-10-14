@@ -62,21 +62,21 @@ def discard_dex_results(out):
                 os.remove(path)
 
 
-def restore(nm, vm, dex_inputs, out, tools, skip_java=False, log=print):
+def restore(nm, vm, dex_inputs, out, tools, skip_dex=False, log=print):
     os.makedirs(out, exist_ok=True)
     clear_results(out)
     os.makedirs(os.path.join(out, 'work'))
     try:
-        return _restore(nm, vm, dex_inputs, out, tools, skip_java, log)
+        return _restore(nm, vm, dex_inputs, out, tools, skip_dex, log)
     except Exception:
         discard_dex_results(out)
         raise
 
 
-def _restore(nm, vm, dex_inputs, out, tools, skip_java, log):
+def _restore(nm, vm, dex_inputs, out, tools, skip_dex, log):
     if not dex_inputs:
         raise RuntimeError('no dex inputs')
-    if not skip_java:
+    if not skip_dex:
         jars = build.require_jars(tools)
         build.find_java()
     recovery = Recovery(nm, vm, [raw for _,raw in dex_inputs], log).extract()
@@ -121,7 +121,7 @@ def _restore(nm, vm, dex_inputs, out, tools, skip_java, log):
     summary = {'backend':'emulate','machine':nm.machine,'methods':len(recovery.methods),
                'blobs':len(recovery.blobs),'decoded':len(recovery.methods),
                'resolvers':len(recovery.sessions),'patched':0,'dex_files':[]}
-    if skip_java:
+    if skip_dex:
         write_json(os.path.join(out,'recovery_summary.json'),summary)
         return summary
     expected = Counter((m['class'],m['name'],m['sig']) for m in recovery.methods)
