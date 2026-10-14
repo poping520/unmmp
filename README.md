@@ -57,6 +57,8 @@ python unmmp.py 应用.apk -o out --skip-dex
 
 ## 原理
 
+[nmmp 加固与 unmmp 还原原理](intro.html)
+
 nmmp 将方法字节码交给 native 虚拟机解释执行，并重写 opcode 和符号引用索引。unmmp 使用 Unicorn 模拟目标库，通过实际执行行为恢复这些信息：
 
 1. 拦截 JNI 方法注册和虚拟机入口，取得方法绑定、字节码、异常表及寄存器布局。

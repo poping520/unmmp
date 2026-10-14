@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>nmmp 加固与 unmmp 还原原理</title>
+  <style>
+    :root { --text: #24313d; --muted: #607080; --blue: #315f8c; --line: #dce2e8; --soft: #f5f7f9; --blue-soft: #eef4fa; }
+    * { box-sizing: border-box; }
+    html { scroll-padding-top: 24px; }
+    body { margin: 0; background: #f2f4f6; color: var(--text); font: 15px/1.8 system-ui, "Microsoft YaHei", sans-serif; }
+    a { color: var(--blue); text-underline-offset: 4px; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, a:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
+    h1, h2, h3, p, figure { margin: 0; }
+    code, pre { font-family: Consolas, "SFMono-Regular", monospace; font-size: .9em; }
+    pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+    [hidden] { display: none !important; }
+    .page { max-width: 1040px; margin: 28px auto; background: #fff; border: 1px solid var(--line); }
+    .page-header { padding: 24px 48px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .site-name { font: 600 16px Consolas, monospace; text-decoration: none; color: var(--text); }
+    nav { display: flex; gap: 24px; font-size: 13px; }
+    nav a { color: var(--muted); text-decoration: none; }
+    nav a:hover { color: var(--blue); }
+    main { padding: 40px 48px 0; }
+    h1 { font-size: 30px; line-height: 1.5; letter-spacing: -.025em; }
+    .lead { color: var(--muted); max-width: 800px; margin-top: 14px; font-size: 16px; }
+    section { margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--line); }
+    .section-heading { display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px; }
+    .section-heading > span { font: 12px Consolas, monospace; color: var(--muted); }
+    h2 { font-size: 22px; line-height: 1.5; }
+    section > p { margin: 12px 0; max-width: 860px; }
+    .caption { color: var(--muted); font-size: 12px; margin-top: 12px; }
+    .compare { display: grid; grid-template-columns: 1fr 58px 1.55fr; align-items: stretch; margin-top: 22px; }
+    .apk { min-width: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+    .apk-title { display: flex; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--soft); font-size: 13px; }
+    .apk-title small { color: var(--muted); font-size: 11px; }
+    .apk-body { padding: 18px; }
+    .before .apk-body { height: calc(100% - 48px); display: flex; flex-direction: column; justify-content: center; gap: 16px; }
+    .file { border: 1px solid var(--line); background: #fff; border-radius: 4px; overflow: hidden; min-width: 0; }
+    .file-name { background: var(--soft); padding: 8px 12px; font: 12px Consolas, monospace; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid var(--line); }
+    .file-name span { color: var(--muted); font: 11px system-ui, sans-serif; }
+    .file pre { padding: 15px 12px; font-size: 12px; line-height: 1.9; }
+    .file p { padding: 12px; font-size: 12px; line-height: 1.7; }
+    .instruction { color: var(--blue); font-weight: 600; }
+    .file-note { color: var(--muted); font-size: 12px; }
+    .transform { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--blue); gap: 4px; font-size: 11px; }
+    .transform b { font: 24px Consolas, monospace; font-weight: 400; }
+    .call-arrow { color: var(--muted); text-align: center; padding: 9px 0; font-size: 11px; }
+    .call-arrow span { color: var(--blue); display: inline-block; margin-right: 7px; font-size: 15px; }
+    .native-files { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .native-files .file { border-top: 2px solid #7d9dbb; }
+    .native-files .file-name { padding: 8px 10px; font-size: 11px; }
+    .native-files .file p { padding: 11px 10px; }
+    .native-link { color: var(--muted); font-size: 11px; text-align: center; margin-top: 12px; }
+    .reference { color: var(--muted); font-size: 12px; margin-top: 17px; }
+    .reference a { margin-right: 12px; }
+    .recovery { margin-top: 24px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+    .recovery-top { background: var(--blue-soft); color: var(--blue); padding: 12px 20px; display: flex; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 13px; border-bottom: 1px solid var(--line); }
+    .recovery-top .arrow { color: #8195aa; }
+    .step { display: grid; grid-template-columns: 32px minmax(0, 1fr) 190px; gap: 18px; align-items: start; padding: 19px 22px; position: relative; }
+    .step:not(:last-child) { border-bottom: 1px solid #e9edf0; }
+    .step-num { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid #b6c9d9; border-radius: 50%; color: var(--blue); font: 12px Consolas, monospace; background: #fff; position: relative; z-index: 1; }
+    .step:not(:last-child)::after { content: ""; position: absolute; width: 1px; background: #dce5ed; top: 47px; bottom: -20px; left: 35px; }
+    .step h3 { font-size: 15px; line-height: 1.8; }
+    .step p { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .step-output { padding: 4px 0 4px 18px; border-left: 1px solid var(--line); font-size: 12px; color: var(--text); }
+    .step-output span { display: block; color: var(--muted); font-size: 11px; margin-bottom: 3px; }
+    .experiment { margin-top: 22px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+    .experiment-title { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 12px 18px; border-bottom: 1px solid var(--line); background: var(--soft); font-size: 13px; }
+    .experiment-title span { color: var(--muted); font-size: 11px; }
+    .experiment-body { padding: 6px 18px 16px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; font-variant-numeric: tabular-nums; }
+    th, td { padding: 12px 10px; border-bottom: 1px solid var(--line); }
+    th { color: var(--muted); font-weight: 400; font-size: 12px; }
+    td:nth-child(2), th:nth-child(2) { color: var(--blue); background: #f3f7fb; }
+    .different { color: #995538; }
+    .experiment-bottom { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 17px; }
+    .experiment-bottom p { font-size: 13px; }
+    .experiment-bottom code { color: var(--blue); }
+    button { padding: 7px 12px; color: var(--blue); background: #fff; border: 1px solid #b6c9d9; border-radius: 4px; font: 12px system-ui, sans-serif; cursor: pointer; flex: none; }
+    button:hover { background: var(--blue-soft); }
+    .outputs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; margin: 22px 0; }
+    .output { border-top: 2px solid #c6d3df; padding-top: 12px; }
+    .output code { font-size: 12px; overflow-wrap: anywhere; }
+    .output p { color: var(--muted); font-size: 12px; margin-top: 5px; }
+    .demo { background: var(--soft); border-left: 3px solid #7d9dbb; padding: 14px 18px; font-size: 13px; }
+    .scope { color: var(--muted); font-size: 13px; }
+    footer { margin: 32px 48px 0; padding: 22px 0; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+    footer .links { display: flex; gap: 18px; flex-wrap: wrap; }
+    @media (max-width: 800px) { .page { margin: 0; border: 0; } .page-header { padding: 20px 28px; } main { padding: 30px 28px 0; } footer { margin: 28px 28px 0; } .compare { grid-template-columns: 1fr 44px 1.5fr; } .apk-body { padding: 13px; } .native-files { grid-template-columns: 1fr; gap: 10px; } .step { grid-template-columns: 28px minmax(0, 1fr) 140px; gap: 14px; padding: 18px; } .step:not(:last-child)::after { left: 31px; } h1 { font-size: 27px; } }
+    @media (max-width: 560px) { body { font-size: 14px; } .page-header { padding: 17px 20px; } nav { gap: 16px; font-size: 12px; } .site-name { font-size: 15px; } main { padding: 27px 20px 0; } h1 { font-size: 25px; } .lead { font-size: 14px; } h2 { font-size: 20px; } section { margin-top: 30px; padding-top: 25px; } .compare { grid-template-columns: 1fr; } .transform { padding: 9px 0; flex-direction: row; gap: 10px; } .transform b { transform: rotate(90deg); display: inline-block; } .before .apk-body { height: auto; padding: 16px; gap: 10px; } .before .file pre { padding: 12px; } .native-files { grid-template-columns: 1fr 1fr; } .native-files .file-name { font-size: 10px; } .step { grid-template-columns: 28px minmax(0, 1fr); gap: 9px 14px; padding: 17px; } .step-output { grid-column: 2; border: 0; padding: 0; } .step-output span { display: inline; margin-right: 8px; } .step:not(:last-child)::after { left: 30px; } .recovery-top { padding: 12px 16px; gap: 10px; font-size: 12px; } .step p { font-size: 12px; } .experiment-title { padding: 12px 14px; flex-wrap: wrap; gap: 4px; } .experiment-body { padding: 4px 10px 13px; } th, td { padding: 11px 6px; } .experiment-bottom { align-items: flex-start; flex-direction: column; gap: 12px; padding: 0 4px; } .experiment-bottom p { font-size: 12px; } .outputs { grid-template-columns: 1fr; gap: 15px; } .output { display: grid; grid-template-columns: 1.15fr 1fr; gap: 12px; padding-top: 10px; } .output p { margin: 0; } .demo { padding: 12px 14px; font-size: 12px; } footer { margin: 25px 20px 0; gap: 10px; } }
+    @media (max-width: 360px) { .native-files { grid-template-columns: 1fr; } .output { grid-template-columns: 1fr; gap: 3px; } }
+    @media print { body { background: #fff; } .page { border: 0; margin: 0; max-width: none; } nav, button { display: none; } main { padding: 20px 0 0; } .page-header { padding: 0 0 15px; } section { margin-top: 25px; padding-top: 20px; } .compare, .recovery, .experiment { break-inside: avoid; } footer { margin: 25px 0 0; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="page-header"><a class="site-name" href="README.md">unmmp</a><nav aria-label="章节"><a href="#protection">加固</a><a href="#recovery">还原</a><a href="#opcode">指令识别</a></nav></header>
+    <main>
+      <h1>nmmp 加固与 unmmp 还原原理</h1>
+      <p class="lead">nmmp 把 DEX 中的方法改为 native 方法，由本地虚拟机执行。unmmp 模拟这些本地库，读取方法数据，识别指令，再还原为 DEX 字节码。</p>
+
+      <section id="protection" aria-labelledby="protection-title">
+        <div class="section-heading"><span>01</span><h2 id="protection-title">加固后，方法放在哪里</h2></div>
+        <p>原来的方法体保存在 DEX 中。nmmp 加固时，会把选中的方法改为 native 声明，将字节码、异常表和符号信息放到本地库，再生成对应的虚拟机解释器。</p>
+        <figure aria-label="加固前后 APK 文件对照：原 DEX 中的方法体被移入 libnmmp.so，DEX 保留 native 声明，libnmmvm.so 负责解释执行。">
+          <div class="compare">
+            <div class="apk before"><div class="apk-title"><strong>加固前</strong><small>原 APK</small></div><div class="apk-body"><div class="file"><div class="file-name">classes.dex <span>有方法体</span></div><pre>.method static add(II)I
+    .registers 3
+    <span class="instruction">add-int</span> v0, p0, p1
+    return v0
+.end method</pre></div><p class="file-note">标准字节码由 Android 执行。</p></div></div>
+            <div class="transform" aria-hidden="true"><span>nmmp</span><b>→</b></div>
+            <div class="apk after"><div class="apk-title"><strong>加固后</strong><small>加固 APK</small></div><div class="apk-body"><div class="file"><div class="file-name">classes.dex <span>保留声明</span></div><pre>.method static <span class="instruction">native</span> add(II)I
+.end method</pre></div><div class="call-arrow"><span aria-hidden="true">↓</span>通过 JNI 调用本地入口</div><div class="native-files"><div class="file"><div class="file-name">libnmmp.so</div><p><strong>本地入口和方法数据</strong><br>改写后的字节码<br>异常表、符号解析</p></div><div class="file"><div class="file-name">libnmmvm.so</div><p><strong>虚拟机解释器</strong><br>接收方法数据<br>按编号执行指令</p></div></div><p class="native-link">本地入口 → vmInterpret → 返回结果</p></div></div>
+          </div>
+          <figcaption class="caption">以整数加法方法为例。代码为简化示意，不来自某个 APK。</figcaption>
+        </figure>
+        <p>nmmp 还会改写 opcode（指令编号）和符号引用索引。生成的解释器使用同一套编号规则，因此仍能执行这些指令。</p>
+        <p class="reference">源码：<a href="https://github.com/maoabc/nmmp#nmmvm">nmmp 虚拟机</a><a href="https://github.com/maoabc/nmmp/blob/master/nmm-protect/apkprotect/src/main/java/com/nmmedit/apkprotect/dex2c/converter/JniCodeGenerator.java">本地入口生成</a></p>
+      </section>
+
+      <section id="recovery" aria-labelledby="recovery-title">
+        <div class="section-heading"><span>02</span><h2 id="recovery-title">unmmp 怎么恢复方法</h2></div>
+        <p>unmmp 使用 Unicorn 模拟 APK 中的本地库。它执行恢复所需的入口和受控指令，直接取得目标库中的数据。</p>
+        <div class="recovery">
+          <div class="recovery-top" aria-label="从加固 APK 经模拟和识别生成 smali，再组装恢复的 DEX"><span>加固 APK</span><span class="arrow" aria-hidden="true">→</span><span>模拟与识别</span><span class="arrow" aria-hidden="true">→</span><span>smali</span><span class="arrow" aria-hidden="true">→</span><span>DEX</span></div>
+          <div class="step"><span class="step-num" aria-hidden="true">1</span><div><h3>确认方法绑定</h3><p>执行 JNI_OnLoad 和注册函数，拦截 RegisterNatives，核对类名、方法名与签名。</p></div><div class="step-output"><span>取得</span>方法对应的本地入口</div></div>
+          <div class="step"><span class="step-num" aria-hidden="true">2</span><div><h3>读取方法数据</h3><p>运行本地入口，在进入 vmInterpret 时停下，读取字节码、异常表和寄存器布局。</p></div><div class="step-output"><span>取得</span>指令与参数位置</div></div>
+          <div class="step"><span class="step-num" aria-hidden="true">3</span><div><h3>识别指令含义</h3><p>让解释器执行专门构造的指令，观察寄存器变化、跳转和 JNI 调用。</p></div><div class="step-output"><span>取得</span>opcode 映射</div></div>
+          <div class="step"><span class="step-num" aria-hidden="true">4</span><div><h3>恢复符号引用</h3><p>调用目标库的 resolver，把索引解析成字段、方法、类型和字符串引用。</p></div><div class="step-output"><span>取得</span>实际的符号引用</div></div>
+          <div class="step"><span class="step-num" aria-hidden="true">5</span><div><h3>写回并校验 DEX</h3><p>结合方法声明和寄存器类型生成 smali，写回方法体、移除 native 标记，再组装和校验。</p></div><div class="step-output"><span>输出</span>恢复的 DEX 与 smali</div></div>
+        </div>
+        <p class="caption">每个 resolver 的引用池分别保存。指令探测执行到下一次调度或返回；无法确认的语义会报错。</p>
+      </section>
+
+      <section id="opcode" aria-labelledby="opcode-title">
+        <div class="section-heading"><span>03</span><h2 id="opcode-title">通过结果判断指令</h2></div>
+        <p>给未知指令不同输入，比较它的输出与已知运算的结果。下面假设 <code>0x37</code> 执行加法；编号与数据仅作示意。</p>
+        <div class="experiment">
+          <div class="experiment-title"><strong>待识别的编号：<code>0x37</code></strong><span>比较加法与异或两种候选</span></div>
+          <div class="experiment-body">
+            <table aria-label="用不同输入区分加法与异或"><thead><tr><th scope="col">输入</th><th scope="col">目标输出</th><th scope="col">加法</th><th scope="col">异或</th></tr></thead><tbody><tr><td>2, 1</td><td>3</td><td>3</td><td>3</td></tr><tr id="second-trial" hidden><td>3, 1</td><td>4</td><td>4</td><td class="different">2</td></tr></tbody></table>
+            <div class="experiment-bottom"><p id="conclusion" aria-live="polite">两种运算都得到 3，还不能区分。</p><button type="button" id="toggle-trial" aria-expanded="false" aria-controls="second-trial">看第二组输入</button></div>
+          </div>
+        </div>
+        <p class="caption">实际工具使用多组输入，还结合控制流、类型和 JNI 调用继续确认。编译器合并的语义需要额外的类型信息来区分。</p>
+        <noscript><p>第二组输入为 3 和 1：目标输出 4，加法得到 4，异或得到 2，因此可以排除异或。</p></noscript>
+      </section>
+
+      <section aria-labelledby="result-title">
+        <div class="section-heading"><span>04</span><h2 id="result-title">恢复后得到什么</h2></div>
+        <div class="outputs"><div class="output"><code>classes_restored.dex</code><p>写回方法体后的 DEX。</p></div><div class="output"><code>patched_smali/</code><p>恢复后的 smali 文件。</p></div><div class="output"><code>opcode_mapping.json</code><p>该 APK 的指令映射。</p></div></div>
+        <div class="demo">官方 DEMO <code>app-release-protect.apk</code>：7987 个方法完整恢复，ARM64、x86_64 输出通过校验和、方法签名及 <code>code_item</code> 检查。</div>
+        <p class="scope">恢复结果是字节码，不能完整还原原始 Java 源码、变量名和注释。工具面向官方 dex2c VM，不支持任意修改的 VM 或 C++ 源码模式。</p>
+      </section>
+    </main>
+    <footer><span>nmmp 加固与 unmmp 还原原理</span><div class="links"><a href="README.md">项目说明</a><a href="https://github.com/maoabc/nmmp">nmmp 源码</a><a href="unmmp_lib/pipeline.py">unmmp 实现</a></div></footer>
+  </div>
+  <script>
+    (() => {
+      const button = document.getElementById('toggle-trial');
+      const row = document.getElementById('second-trial');
+      const conclusion = document.getElementById('conclusion');
+      button.addEventListener('click', () => {
+        row.hidden = !row.hidden;
+        button.setAttribute('aria-expanded', String(!row.hidden));
+        button.textContent = row.hidden ? '看第二组输入' : '收起第二组';
+        conclusion.textContent = row.hidden ? '两种运算都得到 3，还不能区分。' : '第二组只有加法得到 4，本例可识别为 add-int。';
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -58,6 +58,8 @@ Some mapping entries use representative semantic names. The final return, invoke
 
 ## How it works
 
+[nmmp protection and unmmp recovery explained (Chinese)](intro.html)
+
 nmmp executes method bytecode through a native VM and rewrites opcode values and symbol reference indices. unmmp emulates the target libraries with Unicorn and recovers this information from their behavior:
 
 1. Intercept JNI method registration and VM entry to capture method bindings, bytecode, exception tables, and register layouts.
