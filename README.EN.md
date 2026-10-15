@@ -1,14 +1,40 @@
-# unmmp - nmmp VM bytecode recovery tool
+<h1 align="center">
+  <img src="assets/unmmp-icon.png" width="180" height="90" alt="unmmp icon"><br>
+  unmmp
+</h1>
 
-[简体中文](README.md) | **English**
+<p align="center">
+  <a href="README.md">简体中文</a> · <strong>English</strong>
+</p>
 
-Recovers dex bytecode from native methods protected by [nmmp](https://github.com/maoabc/nmmp) dex-vm using Unicorn emulation.
+<p align="center">
+  <strong>nmmp VM bytecode recovery tool</strong><br>
+  Recovers dex bytecode from native methods protected by <a href="https://github.com/maoabc/nmmp">nmmp</a> dex-vm using Unicorn emulation.
+</p>
 
-Supports protected APKs for ARM32, ARM64, x86, and x86_64.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3-3776AB?logo=python&amp;logoColor=white" alt="Python 3">
+  <img src="https://img.shields.io/badge/Unicorn-2.1.4%2B-6C5CE7" alt="Unicorn 2.1.4 or a later 2.x release">
+  <img src="https://img.shields.io/badge/ABI-ARM32%20%7C%20ARM64%20%7C%20x86%20%7C%20x86__64-00897B" alt="ARM32, ARM64, x86, x86_64">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-2563EB" alt="MIT license"></a>
+</p>
+
+<p align="center">
+  <a href="#example-output">Example</a> ·
+  <a href="#installation">Installation</a> ·
+  <a href="#usage">Usage</a> ·
+  <a href="#output">Output</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#official-demo-test-results">Tests</a> ·
+  <a href="#scope">Scope</a> ·
+  <a href="#license">License</a>
+</p>
+
+---
 
 ## Example output
 
-![app-release-protect.png](test-apk/app-release-protect.png)
+![app-release-protect.png](assets/app-release-protect.png)
 
 ## Installation
 

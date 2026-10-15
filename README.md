@@ -1,13 +1,39 @@
-# unmmp - nmmp 虚拟机加固还原工具
+<h1 align="center">
+  <img src="assets/unmmp-icon.png" width="180" height="90" alt="unmmp 图标"><br>
+  unmmp
+</h1>
 
-**简体中文** | [English](README.EN.md)
+<p align="center">
+  <strong>简体中文</strong> · <a href="README.EN.md">English</a>
+</p>
 
-基于 Unicorn 模拟执行，将 [nmmp](https://github.com/maoabc/nmmp) dex-vm 加固的 native 方法还原为 dex 字节码。
+<p align="center">
+  <strong>nmmp 虚拟机加固还原工具</strong><br>
+  基于 Unicorn 模拟执行，将 <a href="https://github.com/maoabc/nmmp">nmmp</a> dex-vm 加固的 native 方法还原为 dex 字节码。
+</p>
 
-支持 ARM32、ARM64、x86、x86_64 任意架构的加固 APK。
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3-3776AB?logo=python&amp;logoColor=white" alt="Python 3">
+  <img src="https://img.shields.io/badge/Unicorn-2.1.4%2B-6C5CE7" alt="Unicorn 2.1.4 或更高的 2.x 版本">
+  <img src="https://img.shields.io/badge/ABI-ARM32%20%7C%20ARM64%20%7C%20x86%20%7C%20x86__64-00897B" alt="ARM32、ARM64、x86、x86_64">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-2563EB" alt="MIT 许可证"></a>
+</p>
+
+<p align="center">
+  <a href="#效果">效果</a> ·
+  <a href="#安装">安装</a> ·
+  <a href="#用法">用法</a> ·
+  <a href="#输出">输出</a> ·
+  <a href="#原理">原理</a> ·
+  <a href="#官方-demo-测试结果">测试结果</a> ·
+  <a href="#范围">范围</a> ·
+  <a href="#许可证">许可证</a>
+</p>
+
+---
 
 ## 效果
-![app-release-protect.png](test-apk/app-release-protect.png)
+![app-release-protect.png](assets/app-release-protect.png)
 
 ## 安装
 
